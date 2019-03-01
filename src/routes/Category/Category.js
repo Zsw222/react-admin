@@ -1,4 +1,6 @@
 import React, {Component} from 'react';
+import {message} from 'antd';
+import  axios  from '../../api/http.js'
 import {
     Table,
     Divider,
@@ -19,6 +21,7 @@ for (let i = 0; i < 8; i++) {
         remark: `London Park no. ${i}`
     });
 }
+
 const FormItem = Form.Item;
 const EditableContext = React.createContext();
 
@@ -41,7 +44,7 @@ class EditableCell extends React.Component {
         }
         return <Input/>;
     };
-
+    
     render() {
         const {
             editing,
@@ -153,7 +156,7 @@ class EditableTable extends React.Component {
             }
         ];
     }
-
+    
     isEditing = record => record.key === this.state.editingKey;
     add = () => {
         let temp = new Array(...this.state.data);
@@ -219,7 +222,17 @@ class EditableTable extends React.Component {
         }, 0)
 
     }
-
+    
+    componentDidMount() {
+        axios.get('category/list').then((res) => {
+            if(res.code!==200){
+                message.error(res.msg);
+                return;
+            }
+            console.log(res)
+        })
+        
+    }
     render() {
         const components = {
             body: {

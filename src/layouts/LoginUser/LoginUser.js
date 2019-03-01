@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
 import './LoginUser.less'
-import {Form, Icon, Input, Button} from 'antd';
+import {message,Form, Icon, Input, Button} from 'antd';
 import BGParticle from '../../utils/BGParticle'
+// import {getData, postData} from "../../api/http.js/index.js"
 const url = 'https://zsw-1258369569.cos.ap-chengdu.myqcloud.com/884c994906e05a0e2b2009e405039' +
         '64c.jpg'
 class LoginUser extends Component {
@@ -16,8 +17,8 @@ class LoginUser extends Component {
                 this.setState({loading: false, url})
             })
             .then(() => {
-                //为什么写在then里？id为backgroundBox的DOM元素是在loading为false时才有，而上面的setState可能是异步的，必须等到set
-                //State执行完成后才去获取dom
+                // 为什么写在then里？id为backgroundBox的DOM元素是在loading为false时才有，而上面的setState可能是异步的，必须等到set
+                // State执行完成后才去获取dom
                 this.particle = new BGParticle('LoginUser')
                 this
                     .particle
@@ -47,11 +48,20 @@ class LoginUser extends Component {
             .form
             .validateFields((err, values) => {
                 if (!err) {
-                    this
-                        .props
-                        .history
-                        .push('/Main/Home')
-                    console.log('Received values of form: ', values);
+                    // 请求登录接口
+                    // postData('/users/login', values).then((res) => {
+                    //     if(res.code!==200){
+                    //         message.error(res.msg);
+                    //         return;
+                    //     }
+                    //     message.success('登录成功');
+                    //     sessionStorage.setItem("token",res.token)
+                    //     this
+                    //         .props
+                    //         .history
+                    //         .push('/Main/Home')
+                    // })
+                    // console.log('Received values of form: ', values);
                 }
             });
     }
@@ -62,7 +72,7 @@ class LoginUser extends Component {
 
                 <Form onSubmit={this.handleSubmit} className="login-form">
                     <Form.Item>
-                        {getFieldDecorator('userName', {
+                        {getFieldDecorator('username', {
                             rules: [
                                 {
                                     required: true,

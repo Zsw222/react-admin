@@ -4,7 +4,7 @@ import SimpleMDE from 'simplemde'
 import marked from 'marked';
 import highlight from 'highlight.js';
 import 'simplemde/dist/simplemde.min.css'
-import {Form, Icon, Input, Button,Select } from 'antd';
+import {Form, Icon, Input, Button, Select,Col} from 'antd';
 
 // import 'highlight.js/styles/github.css';
 import './About.less'
@@ -49,7 +49,7 @@ class About extends Component {
         const {getFieldDecorator} = this.props.form;
         const formItemLayout = {
             labelCol: {
-                span: 3
+                span: 2
             },
             wrapperCol: {
                 span: 20
@@ -57,7 +57,9 @@ class About extends Component {
         }
         return (
             <div id='editArticle'>
-                <Form onSubmit={this.handleSubmit} layout='inline' className='article_form'>
+                <div>
+                <Form onSubmit={this.handleSubmit} layout='horizontal'  className='article_form'>
+                <Col span={24}>
                     <Form.Item label="标题" >
                         {getFieldDecorator('userName', {
                             rules: [
@@ -66,11 +68,10 @@ class About extends Component {
                                     message: '请输入标题!'
                                 }
                             ]
-                        })(
-                            <Input
-                                placeholder="Username"/>
-                        )}
+                        })(<Input placeholder="Username"/>)}
                     </Form.Item>
+                    </Col>
+                    <Col span={12}>
                     <Form.Item label="作者" >
                         {getFieldDecorator('password', {
                             rules: [
@@ -79,62 +80,76 @@ class About extends Component {
                                     message: '请输入作者!'
                                 }
                             ]
-                        })(
-                            <Input
-                                type="password"
-                                placeholder="Password"/>
-                        )}
+                        })(<Input type="password" placeholder="Password"/>)}
                     </Form.Item>
-                    <Form.Item label="封面链接">
-                        {getFieldDecorator('password', {
+                    </Col>
+                    <Col span={12}>
+                    <Form.Item label="封面链接" >
+                        {getFieldDecorator('link', {
                             rules: [
                                 {
                                     required: true,
                                     message: '请输入作者!'
                                 }
                             ]
-                        })(
-                            <Input
-                                type="password"
-                                placeholder="Password"/>
-                        )}
+                        })(<Input type="password" placeholder="Password"/>)}
                     </Form.Item>
+                    </Col>
+                    <Col span={24}>
                     <Form.Item label="描述" >
-                        {getFieldDecorator('password', {})(
-                            <Input style={{ width: '100%' }}
-                                type="password"
-                                placeholder="Password"/>
-                        )}
+                        {getFieldDecorator('describ', {})(<Input
+                            style={{
+                            width: '100%'
+                        }}
+                            type="password"
+                            placeholder="Password"/>)}
                     </Form.Item>
+                    </Col>
+                    <Col span={8}>
                     <Form.Item label="分类" >
-                        {getFieldDecorator('password', {})(
-                            <Select defaultValue="lucy" style={{ width: 120 }} >
-                            <Option value="jack">Jack</Option>
-                            <Option value="lucy">Lucy</Option>
-                            <Option value="disabled" disabled>Disabled</Option>
-                            <Option value="Yiminghe">yiminghe</Option>
-                          </Select>
+                        {getFieldDecorator('category', {})(
+                            <Select
+                                defaultValue="lucy"
+                                style={{
+                                width: 200
+                            }}>
+                                <Option value="jack">Jack</Option>
+                                <Option value="lucy">Lucy</Option>
+                                <Option value="disabled" disabled>Disabled</Option>
+                                <Option value="Yiminghe">yiminghe</Option>
+                            </Select>
                         )}
                     </Form.Item>
+                    </Col>
+                    <Col span={8}>
                     <Form.Item label="标签" >
-                        {getFieldDecorator('password', {})(
-                            <Select defaultValue="lucy" style={{ width: 120 }} >
-                            <Option value="jack">Jack</Option>
-                            <Option value="lucy">Lucy</Option>
-                            <Option value="disabled" disabled>Disabled</Option>
-                            <Option value="Yiminghe">yiminghe</Option>
-                          </Select>
+                        {getFieldDecorator('label', {})(
+                            <Select
+                                defaultValue="lucy"
+                                style={{
+                                width: 200
+                            }}>
+                                <Option value="jack">Jack</Option>
+                                <Option value="lucy">Lucy</Option>
+                                <Option value="disabled" disabled>Disabled</Option>
+                                <Option value="Yiminghe">yiminghe</Option>
+                            </Select>
                         )}
                     </Form.Item>
-                    <Form.Item>
+                    </Col>
+                    {/* <Form.Item>
 
                         <Button type="primary" htmlType="submit" className="login-form-button">
                             Log in
                         </Button>
 
-                    </Form.Item>
+                    </Form.Item> */}
                 </Form>
+                </div>
                 <textarea id="editor"></textarea>
+                <Button type="primary" htmlType="submit" className="login-form-button" style={{width: 200}}>
+                            保存
+                        </Button>
                 {/* <TextArea rows={4} value={articleDetail} onChange={this.inputContent}/>
                 <div
                     id="content"
