@@ -1,14 +1,22 @@
 
-
-//  1.整个应用用到了哪些接口一目了然
-//  2.接口地址可能变化，方便管理​
-const prefix = '' // api地址前缀
-export default(config => {
-    return Object.keys(config).reduce((copy, name) => {
-      copy[name] = `${prefix}$config[name]`
-      return copy
-    }, {})
-})({
-  // example api
-  "category": "/category/list" 
-})
+import axios from './http'
+// 登录
+export  function _login(data){
+  return  axios.post('/users/login',data)
+}
+// 获取分类列表数据
+export  function _getCategoryList(data){
+  return axios.get('/category/list',data)
+}
+// 新增分类列表数据
+export  function _addCategoryList(data){
+  return  axios.post('/category/list',data)
+}
+// 删除分类列表数据
+export  function _updateCategoryList(data){
+  return  axios.put('/category/list',data)
+}
+// 删除分类列表数据
+export  function _deleteCategoryList(data){
+  return  axios.delete('/category/list',{data:data})
+}

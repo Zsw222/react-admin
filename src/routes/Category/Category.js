@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {message} from 'antd';
 import  axios  from '../../api/http.js'
+import {_getCategoryList,_addCategoryList,_deleteCategoryList,_updateCategoryList} from '../../api/api.js'
 import {
     Table,
     Divider,
@@ -11,16 +12,8 @@ import {
     Popconfirm
 } from 'antd';
 import './Category.less'
+import {from} from 'rxjs';
 const {Column} = Table;
-const data = [];
-for (let i = 0; i < 8; i++) {
-    data.push({
-        key: i.toString(),
-        id: i.toString(),
-        title: `Edrward ${i}`,
-        remark: `London Park no. ${i}`
-    });
-}
 
 const FormItem = Form.Item;
 const EditableContext = React.createContext();
@@ -91,22 +84,17 @@ class EditableTable extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            data,
+            data:[],
             editingKey: '', //当前正在编辑的行的key
             lastEditingKey: ''
         };
         this.columns = [
             {
                 title: '序号',
-                dataIndex: 'key',
+                render:(text,record,index)=>`${index+1}`,
                 width: '15%',
                 editable: false
-            }, {
-                title: 'id',
-                dataIndex: 'id',
-                width: '15%',
-                editable: false
-            }, {
+            },  {
                 title: '类名',
                 dataIndex: 'title',
                 width: '15%',
@@ -131,23 +119,25 @@ class EditableTable extends React.Component {
                                             {form => (
                                                 <a
                                                     href="javascript:;"
-                                                    onClick={() => this.save(form, record.key)}
+                                                    onClick={() => this.save(form, record._id)}
                                                    >
                                                     保存
                                                 </a>
                                             )}
                                         </EditableContext.Consumer>
                                         <Divider type="vertical" />
-                                        <Popconfirm title="Sure to cancel?" onConfirm={() => this.cancel(record)}>
+                                        <Popconfirm title="确定取消编辑吗?" onConfirm={() => this.cancel(record)}>
                                             <a>取消</a>
                                         </Popconfirm>
                                     </span>
                                 )
                                 : (
                                     <span>
-                                        <a href="javascript:;" onClick={() => this.edit(record.key)}>编辑</a> 
+                                        <a href="javascript:;" onClick={() => this.edit(record._id)}>编辑</a> 
                                         <Divider type="vertical" />
-                                        <a href="javascript:;" onClick={() => this.delete(record.key)}>删除</a>
+                                        <Popconfirm title="确定要删除吗?" onConfirm={() => this.delete(record._id)}>
+                                            <a>删除</a>
+                                        </Popconfirm>
                                     </span>
                                 )}
                         </div>
@@ -157,34 +147,39 @@ class EditableTable extends React.Component {
         ];
     }
     
-    isEditing = record => record.key === this.state.editingKey;
+    isEditing = record => record._id === this.state.editingKey;
     add = () => {
         let temp = new Array(...this.state.data);
         let newData = {
-            key: (data.length).toString(),
-            id: '',
-            title: `Edrward ${ (data.length)}`,
-            remark: `London Park no.${ (data.length)} `
+            _id: '',
+            title: '',
+            remark: ` `
         }
         temp.push(newData)
-        this.edit(newData.key)
+        this.edit(newData._id)
         this.setState({data: temp});
     }
     cancel = (record) => {
-        if (!record.id) {
-            this.delete(record.key)
+        if (!record._id) {
+            this.delete(record._id)
         }
         this.setState({editingKey: ''})
 
     };
-
-    save(form, key) {
+    // 获取列表数据
+    async getList(){
+        let res=await _getCategoryList()
+        this.setState({data:res})
+    }
+    // 保存数据
+    save(form, _id) {
         form.validateFields((error, row) => {
             if (error) {
                 return;
             }
             const newData = [...this.state.data];
-            const index = newData.findIndex(item => key === item.key);
+            const index = newData.findIndex(item => _id === item._id);
+
             if (index > -1) {
                 const item = newData[index];
                 newData.splice(index, 1, {
@@ -192,45 +187,62 @@ class EditableTable extends React.Component {
                     ...row
                 });
                 this.setState({data: newData, editingKey: ''});
+                if(!_id){
+                    _addCategoryList(row).then((res)=>{//保存接口
+                        if(!res.code===200) return;
+                        message.success('新增成功');
+                        
+                        this.getList()
+                    })
+                    return
+                    
+                }
+                let data=row
+                data._id=_id
+                _updateCategoryList(data).then((res)=>{//保存接口
+                    if(!res.code===200) return;
+                    message.success('修改成功');
+                    
+                    this.getList()
+                })
             } else {
                 newData.push(row);
                 this.setState({data: newData, editingKey: ''});
+                
             }
         });
     }
     // 删除此行数据
-    delete(key) {
+    async delete(_id) {
+        
+        let res=await _deleteCategoryList({_id:_id})
+        if(!res.code===200) return;
         let temp = new Array(...this.state.data); //复制原数组
-        temp.splice(temp.findIndex(item => item.key === key), 1)//删除数组中此条数据
+        temp.splice(temp.findIndex(item => item._id === _id), 1)//删除数组中此条数据
         this.setState({data: temp});
+        message.success('删除成功');
     }
-    edit(key) {
+    edit(_id) {
         this.setState({lastEditingKey: this.state.editingKey});//将上一次操作的数据的key保存下来
-        this.setState({editingKey: key});
+        this.setState({editingKey: _id});
         // 由于setState是异步的，所以会导致状态更新不及时，增加setTimeout解决此问题
         setTimeout(() => {
             if (this.state.lastEditingKey !== '') {
                 let newKey = this
                     .state
                     .data
-                    .findIndex(item => item.key === this.state.lastEditingKey)
+                    .findIndex(item => item._id === this.state.lastEditingKey)
                     // 如果是新增的数据没有保存的则删除
-                if (!this.state.data[newKey].id) {
+                if (!this.state.data[newKey]._id) {
                     this.delete(this.state.lastEditingKey)
                 }
             }
         }, 0)
 
     }
-    
+   
     componentDidMount() {
-        axios.get('category/list').then((res) => {
-            if(res.code!==200){
-                message.error(res.msg);
-                return;
-            }
-            console.log(res)
-        })
+        this.getList()
         
     }
     render() {
@@ -266,6 +278,7 @@ class EditableTable extends React.Component {
                 <Button type="primary" onClick={this.add} className='add_btn'>
                     新增
                 </Button><Table
+                rowKey="_id"
                     components={components}
                     bordered
                     dataSource={this.state.data}

@@ -2,6 +2,8 @@ import React, {Component} from 'react';
 import './LoginUser.less'
 import {message,Form, Icon, Input, Button} from 'antd';
 import BGParticle from '../../utils/BGParticle'
+import {_login} from '../../api/api'
+import { from } from 'rxjs';
 // import {getData, postData} from "../../api/http.js/index.js"
 const url = 'https://zsw-1258369569.cos.ap-chengdu.myqcloud.com/884c994906e05a0e2b2009e405039' +
         '64c.jpg'
@@ -41,7 +43,7 @@ class LoginUser extends Component {
     componentDidMount() {
         this.initPage()
     }
-    handleSubmit = (e) => {
+    handleSubmit =(e)=> {
         e.preventDefault();
         this
             .props
@@ -49,19 +51,21 @@ class LoginUser extends Component {
             .validateFields((err, values) => {
                 if (!err) {
                     // 请求登录接口
-                    // postData('/users/login', values).then((res) => {
-                    //     if(res.code!==200){
-                    //         message.error(res.msg);
-                    //         return;
-                    //     }
-                    //     message.success('登录成功');
-                    //     sessionStorage.setItem("token",res.token)
-                    //     this
-                    //         .props
-                    //         .history
-                    //         .push('/Main/Home')
-                    // })
-                    // console.log('Received values of form: ', values);
+                    _login(values).then(res=>{
+                        
+                        if(res.code!==200){
+                            message.error(res.msg);
+                            return
+                        }
+                        message.success('登录成功');
+                        sessionStorage.setItem("token",res.token)
+                        this
+                            .props
+                            .history
+                            .push('/Main/Home')
+                    }
+                )
+                        
                 }
             });
     }
