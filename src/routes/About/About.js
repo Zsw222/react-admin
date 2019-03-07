@@ -4,18 +4,25 @@ import SimpleMDE from 'simplemde'
 import marked from 'marked';
 import highlight from 'highlight.js';
 import 'simplemde/dist/simplemde.min.css'
-import {Form, Icon, Input, Button, Select,Col} from 'antd';
-
+import {Form, Icon, Input, Button, Select,Col,Tag} from 'antd';
+import {_getCategoryList,_getLabelList,_addArticleList} from '../../api/api.js'
 // import 'highlight.js/styles/github.css';
 import './About.less'
 const {TextArea} = Input;
 const Option = Select.Option;
 class About extends Component {
+    constructor(props) {
+        super(props);
+    this.state = {
+        categoryData:[],
+        labelData:[],
+        editingKey: '', //当前正在编辑的行的key
+        lastEditingKey: ''
+    };
+}
+
     componentDidMount() {
-        // marked相关配置  marked.setOptions({     renderer: new marked.Renderer(),     gfm:
-        // true,     tables: true,     breaks: true,     pedantic: false,     sanitize:
-        // true,     smartLists: true,     smartypants: false,     highlight: function
-        // (code) {         return highlight.highlightAuto(code).value;     } });
+        // 初始化编辑器
         this.smde = new SimpleMDE({
             element: document
                 .getElementById('editor')
@@ -41,46 +48,58 @@ class About extends Component {
             }
         })
     }
-    componentWillMount() {}
-    // 输入marked文本 inputContent(val) {     this.setState({articleDetail:
-    // val.target.value}) }
+// 获取列表数据
+async getCategoryList(){
+    let res=await _getCategoryList()
+    this.setState({categoryData:res})
+}
+async getlabelList(){
+    let res=await _getLabelList()
+    this.setState({labelData:res})
+}
+handleSubmit= (e) =>{
+    e.preventDefault();
+    this.props.form.validateFields((err, values) => {
+      if (!err) {
+          values.article=this.smde.value()
+          _addArticleList(values).then((res)=>{
+            console.log(res)
+          })
+      }
+    });
+}
+    componentWillMount() {
+        this.getCategoryList()
+        this.getlabelList()
+    }
     render() {
-        // const {articleDetail} = this.state
         const {getFieldDecorator} = this.props.form;
-        const formItemLayout = {
-            labelCol: {
-                span: 2
-            },
-            wrapperCol: {
-                span: 20
-            }
-        }
         return (
             <div id='editArticle'>
                 <div>
                 <Form onSubmit={this.handleSubmit} layout='horizontal'  className='article_form'>
                 <Col span={24}>
                     <Form.Item label="标题" >
-                        {getFieldDecorator('userName', {
+                        {getFieldDecorator('title', {
                             rules: [
                                 {
                                     required: true,
-                                    message: '请输入标题!'
+                                    message: '标题'
                                 }
                             ]
-                        })(<Input placeholder="Username"/>)}
+                        })(<Input type="input" placeholder="Username"/>)}
                     </Form.Item>
                     </Col>
                     <Col span={12}>
                     <Form.Item label="作者" >
-                        {getFieldDecorator('password', {
+                        {getFieldDecorator('author', {
                             rules: [
                                 {
                                     required: true,
-                                    message: '请输入作者!'
+                                    message: '作者'
                                 }
                             ]
-                        })(<Input type="password" placeholder="Password"/>)}
+                        })(<Input type="input" placeholder="请输入作者!"/>)}
                     </Form.Item>
                     </Col>
                     <Col span={12}>
@@ -89,34 +108,44 @@ class About extends Component {
                             rules: [
                                 {
                                     required: true,
-                                    message: '请输入作者!'
+                                    message: '请输入封面链接!'
                                 }
                             ]
-                        })(<Input type="password" placeholder="Password"/>)}
+                        })(<Input type="input"  placeholder="封面链接"/>)}
                     </Form.Item>
                     </Col>
                     <Col span={24}>
                     <Form.Item label="描述" >
-                        {getFieldDecorator('describ', {})(<Input
+                        {getFieldDecorator('remark', {
+                            
+                        })(<Input
                             style={{
                             width: '100%'
                         }}
-                            type="password"
-                            placeholder="Password"/>)}
+                            type="input"
+                            placeholder="描述"/>)}
                     </Form.Item>
                     </Col>
                     <Col span={8}>
                     <Form.Item label="分类" >
-                        {getFieldDecorator('category', {})(
+                        {getFieldDecorator('category', {
+                            rules: [
+                                {
+                                    required: true,
+                                    message: '请输入封面链接!'
+                                }
+                            ]
+                        })(
                             <Select
-                                defaultValue="lucy"
+                                // defaultValue="lucy"
                                 style={{
                                 width: 200
                             }}>
-                                <Option value="jack">Jack</Option>
-                                <Option value="lucy">Lucy</Option>
-                                <Option value="disabled" disabled>Disabled</Option>
-                                <Option value="Yiminghe">yiminghe</Option>
+                            {
+                                this.state.categoryData.map(item=>{
+                                    return <Option value={item._id}>{item.title}</Option>
+                                })
+                            }
                             </Select>
                         )}
                     </Form.Item>
@@ -125,44 +154,33 @@ class About extends Component {
                     <Form.Item label="标签" >
                         {getFieldDecorator('label', {})(
                             <Select
-                                defaultValue="lucy"
+                            mode="multiple"
+                                // defaultValue="lucy"
                                 style={{
-                                width: 200
+                                width: 400
                             }}>
-                                <Option value="jack">Jack</Option>
-                                <Option value="lucy">Lucy</Option>
-                                <Option value="disabled" disabled>Disabled</Option>
-                                <Option value="Yiminghe">yiminghe</Option>
+                               {
+                                this.state.labelData.map(item=>{
+                                    return <Option value={item._id}><Tag color={item.color}>{item.title}</Tag></Option>
+                                })
+                            }
                             </Select>
                         )}
                     </Form.Item>
                     </Col>
-                    {/* <Form.Item>
-
-                        <Button type="primary" htmlType="submit" className="login-form-button">
-                            Log in
-                        </Button>
-
-                    </Form.Item> */}
+                    
                 </Form>
                 </div>
                 <textarea id="editor"></textarea>
-                <Button type="primary" htmlType="submit" className="login-form-button" style={{width: 200}}>
+                <Button type="primary" onClick={this.handleSubmit} htmlType="submit" className="login-form-button" style={{width: 200}}>
                             保存
                         </Button>
-                {/* <TextArea rows={4} value={articleDetail} onChange={this.inputContent}/>
-                <div
-                    id="content"
-                    className="article-detail"
-                    dangerouslySetInnerHTML={{
-                    __html: this.state.articleDetail
-                        ? marked(this.state.articleDetail)
-                        : null
-                }}/> */}
             </div>
 
         )
     }
+    
 }
+
 const QUE = Form.create()(About)
 export default QUE
